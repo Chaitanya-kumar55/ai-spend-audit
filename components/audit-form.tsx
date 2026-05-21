@@ -39,10 +39,11 @@ export default function AuditForm() {
     },
   ]);
 
-  // Load localStorage
+  // Load saved form
   useEffect(() => {
 
-    const saved = localStorage.getItem("audit-form");
+    const saved =
+      localStorage.getItem("audit-form");
 
     if (!saved) return;
 
@@ -73,7 +74,7 @@ export default function AuditForm() {
 
   }, []);
 
-  // Save localStorage
+  // Save form
   useEffect(() => {
 
     localStorage.setItem(
@@ -93,20 +94,28 @@ export default function AuditForm() {
     value: string | number
   ) {
 
-    const updated = [...toolEntries];
+    setToolEntries((prev) => {
 
-    updated[index] = {
-      ...updated[index],
-      [key]: value,
-    };
+      const updated = [...prev];
 
-    setToolEntries(updated);
+      updated[index] = {
+        ...updated[index],
+        [key]: value,
+      };
+
+      // Reset plan if tool changes
+      if (key === "tool") {
+        updated[index].plan = "";
+      }
+
+      return updated;
+    });
   }
 
   function addTool() {
 
-    setToolEntries([
-      ...toolEntries,
+    setToolEntries((prev) => [
+      ...prev,
       {
         tool: "",
         plan: "",
@@ -118,10 +127,27 @@ export default function AuditForm() {
 
   function handleSubmit() {
 
+    const filteredTools =
+      toolEntries.filter(
+        (tool) =>
+          tool.tool &&
+          tool.plan &&
+          tool.monthlySpend > 0
+      );
+
+    if (filteredTools.length === 0) {
+
+      alert(
+        "Please add at least one valid tool."
+      );
+
+      return;
+    }
+
     const auditResults = generateAudit({
       teamSize,
       useCase,
-      tools: toolEntries,
+      tools: filteredTools,
     });
 
     setResults(auditResults);
@@ -139,6 +165,7 @@ export default function AuditForm() {
 
         <Input
           type="number"
+          min={1}
           value={teamSize}
           onChange={(e) =>
             setTeamSize(Number(e.target.value))
@@ -169,9 +196,11 @@ export default function AuditForm() {
 
         {toolEntries.map((entry, index) => {
 
-          const selectedTool = tools.find(
-            (t) => t.name === entry.tool
-          );
+          const selectedTool =
+            tools.find(
+              (tool) =>
+                tool.name === entry.tool
+            );
 
           return (
             <div
@@ -203,12 +232,14 @@ export default function AuditForm() {
                   </option>
 
                   {tools.map((tool) => (
+
                     <option
                       key={tool.name}
                       value={tool.name}
                     >
                       {tool.name}
                     </option>
+
                   ))}
 
                 </select>
@@ -238,14 +269,19 @@ export default function AuditForm() {
                     Select Plan
                   </option>
 
-                  {selectedTool?.plans.map((plan) => (
-                    <option
-                      key={plan}
-                      value={plan}
-                    >
-                      {plan}
-                    </option>
-                  ))}
+                  {selectedTool &&
+                    selectedTool.plans.map(
+                      (plan) => (
+
+                        <option
+                          key={plan}
+                          value={plan}
+                        >
+                          {plan}
+                        </option>
+
+                      )
+                    )}
 
                 </select>
 
@@ -260,6 +296,7 @@ export default function AuditForm() {
 
                 <Input
                   type="number"
+                  min={0}
                   value={entry.monthlySpend}
                   onChange={(e) =>
                     updateTool(
@@ -281,6 +318,7 @@ export default function AuditForm() {
 
                 <Input
                   type="number"
+                  min={1}
                   value={entry.seats}
                   onChange={(e) =>
                     updateTool(

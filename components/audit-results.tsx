@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import { AuditRecommendation } from "@/types/audit";
 
 interface Props {
@@ -8,6 +12,12 @@ export default function AuditResults({
   results,
 }: Props) {
 
+  const [summary, setSummary] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(true);
+
   const totalMonthlySavings =
     results.reduce(
       (acc, item) => acc + item.savings,
@@ -16,6 +26,51 @@ export default function AuditResults({
 
   const annualSavings =
     totalMonthlySavings * 12;
+
+  useEffect(() => {
+
+    async function generateSummary() {
+
+      try {
+
+        const response = await fetch(
+          "/api/summary",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              results,
+            }),
+          }
+        );
+
+        const data =
+          await response.json();
+
+        setSummary(data.summary);
+
+      } catch (error) {
+
+        console.error(error);
+
+        setSummary(
+          "Your AI stack has optimization opportunities that could reduce monthly operating costs."
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+    generateSummary();
+
+  }, [results]);
 
   return (
     <div className="mt-16">
@@ -40,6 +95,29 @@ export default function AuditResults({
           </p>
 
         </div>
+
+      </div>
+
+      {/* AI Summary */}
+      <div className="border border-zinc-800 rounded-2xl p-6 mb-10">
+
+        <h3 className="text-2xl font-semibold mb-4">
+          AI Summary
+        </h3>
+
+        {loading ? (
+
+          <p className="text-zinc-400">
+            Generating summary...
+          </p>
+
+        ) : (
+
+          <p className="text-zinc-300 leading-7">
+            {summary}
+          </p>
+
+        )}
 
       </div>
 
