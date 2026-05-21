@@ -7,6 +7,12 @@ import { tools } from "@/data/tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import AuditResults from "@/components/audit-results";
+
+import { generateAudit } from "@/lib/audit-engine";
+
+import { AuditRecommendation } from "@/types/audit";
+
 interface ToolEntry {
   tool: string;
   plan: string;
@@ -20,6 +26,10 @@ export default function AuditForm() {
 
   const [useCase, setUseCase] = useState("");
 
+  const [results, setResults] = useState<
+    AuditRecommendation[]
+  >([]);
+
   const [toolEntries, setToolEntries] = useState<ToolEntry[]>([
     {
       tool: "",
@@ -29,7 +39,7 @@ export default function AuditForm() {
     },
   ]);
 
-  // Load saved form data
+  // Load localStorage
   useEffect(() => {
 
     const saved = localStorage.getItem("audit-form");
@@ -40,9 +50,10 @@ export default function AuditForm() {
 
       const parsed = JSON.parse(saved);
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTeamSize(parsed.teamSize ?? 1);
+
       setUseCase(parsed.useCase ?? "");
+
       setToolEntries(
         parsed.toolEntries ?? [
           {
@@ -56,16 +67,13 @@ export default function AuditForm() {
 
     } catch (error) {
 
-      console.error(
-        "Failed to parse localStorage",
-        error
-      );
+      console.error(error);
 
     }
 
   }, []);
 
-  // Save form data
+  // Save localStorage
   useEffect(() => {
 
     localStorage.setItem(
@@ -110,13 +118,13 @@ export default function AuditForm() {
 
   function handleSubmit() {
 
-    console.log({
+    const auditResults = generateAudit({
       teamSize,
       useCase,
-      toolEntries,
+      tools: toolEntries,
     });
 
-    alert("Audit generation coming next.");
+    setResults(auditResults);
   }
 
   return (
@@ -307,6 +315,11 @@ export default function AuditForm() {
         </Button>
 
       </div>
+
+      {/* Results */}
+      {results.length > 0 && (
+        <AuditResults results={results} />
+      )}
 
     </div>
   );
