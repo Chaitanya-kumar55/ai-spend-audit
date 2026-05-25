@@ -39,7 +39,6 @@ export default function AuditForm() {
     },
   ]);
 
-  // Load saved form
   useEffect(() => {
 
     const saved =
@@ -51,6 +50,7 @@ export default function AuditForm() {
 
       const parsed = JSON.parse(saved);
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTeamSize(parsed.teamSize ?? 1);
 
       setUseCase(parsed.useCase ?? "");
@@ -74,7 +74,6 @@ export default function AuditForm() {
 
   }, []);
 
-  // Save form
   useEffect(() => {
 
     localStorage.setItem(
@@ -103,7 +102,6 @@ export default function AuditForm() {
         [key]: value,
       };
 
-      // Reset plan if tool changes
       if (key === "tool") {
         updated[index].plan = "";
       }
@@ -159,7 +157,7 @@ export default function AuditForm() {
       {/* Team Size */}
       <div>
 
-        <label className="block mb-2 font-medium">
+        <label className="block mb-2 font-medium text-slate-300">
           Team Size
         </label>
 
@@ -167,6 +165,7 @@ export default function AuditForm() {
           type="number"
           min={1}
           value={teamSize}
+          className="bg-slate-900 border-slate-700 text-white"
           onChange={(e) =>
             setTeamSize(Number(e.target.value))
           }
@@ -177,13 +176,14 @@ export default function AuditForm() {
       {/* Use Case */}
       <div>
 
-        <label className="block mb-2 font-medium">
+        <label className="block mb-2 font-medium text-slate-300">
           Primary Use Case
         </label>
 
         <Input
           placeholder="coding, research, writing..."
           value={useCase}
+          className="bg-slate-900 border-slate-700 text-white"
           onChange={(e) =>
             setUseCase(e.target.value)
           }
@@ -205,18 +205,18 @@ export default function AuditForm() {
           return (
             <div
               key={index}
-              className="border border-zinc-800 rounded-xl p-6 space-y-4"
+              className="border border-slate-700 bg-slate-900/60 backdrop-blur rounded-2xl p-6 space-y-4 shadow-xl"
             >
 
               {/* Tool */}
               <div>
 
-                <label className="block mb-2">
+                <label className="block mb-2 text-slate-300">
                   Tool
                 </label>
 
                 <select
-                  className="w-full bg-black border border-zinc-700 p-3 rounded-lg"
+                  className="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg text-white"
                   value={entry.tool}
                   onChange={(e) =>
                     updateTool(
@@ -249,12 +249,12 @@ export default function AuditForm() {
               {/* Plan */}
               <div>
 
-                <label className="block mb-2">
+                <label className="block mb-2 text-slate-300">
                   Plan
                 </label>
 
                 <select
-                  className="w-full bg-black border border-zinc-700 p-3 rounded-lg"
+                  className="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg text-white"
                   value={entry.plan}
                   onChange={(e) =>
                     updateTool(
@@ -290,7 +290,7 @@ export default function AuditForm() {
               {/* Monthly Spend */}
               <div>
 
-                <label className="block mb-2">
+                <label className="block mb-2 text-slate-300">
                   Monthly Spend ($)
                 </label>
 
@@ -298,6 +298,7 @@ export default function AuditForm() {
                   type="number"
                   min={0}
                   value={entry.monthlySpend}
+                  className="bg-slate-900 border-slate-700 text-white"
                   onChange={(e) =>
                     updateTool(
                       index,
@@ -312,7 +313,7 @@ export default function AuditForm() {
               {/* Seats */}
               <div>
 
-                <label className="block mb-2">
+                <label className="block mb-2 text-slate-300">
                   Number of Seats
                 </label>
 
@@ -320,6 +321,7 @@ export default function AuditForm() {
                   type="number"
                   min={1}
                   value={entry.seats}
+                  className="bg-slate-900 border-slate-700 text-white"
                   onChange={(e) =>
                     updateTool(
                       index,
@@ -337,24 +339,25 @@ export default function AuditForm() {
 
       </div>
 
-      {/* Add Tool */}
       <Button
         onClick={addTool}
         variant="outline"
+        className="h-12 text-base"
       >
         Add Another Tool
       </Button>
 
-      {/* Submit */}
       <div>
 
-        <Button onClick={handleSubmit}>
+        <Button
+          onClick={handleSubmit}
+          className="h-14 text-lg w-full md:w-auto"
+        >
           Generate Audit
         </Button>
 
       </div>
 
-      {/* Results */}
       {results.length > 0 && (
         <AuditResults results={results} />
       )}
